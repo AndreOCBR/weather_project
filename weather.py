@@ -16,11 +16,15 @@ class WeatherApp(QWidget):
         self.description = QLabel(self)
         self.initUI()
 
+# Function used customize all UI from the app
+
     def initUI(self):
+        
 # Window config
+
         self.setWindowTitle("Weather App")
 
-# Layout config
+# Vertical Layout config
         vbox = QVBoxLayout()
         vbox.addWidget(self.label)
         vbox.addWidget(self.line)
@@ -28,15 +32,18 @@ class WeatherApp(QWidget):
         vbox.addWidget(self.temperature)
         vbox.addWidget(self.emoji)
         vbox.addWidget(self.description)
-
         self.setLayout(vbox)
+
+# Align the elements vertically
+
         self.label.setAlignment(Qt.AlignCenter)
         self.line.setAlignment(Qt.AlignCenter)
         self.temperature.setAlignment(Qt.AlignCenter)
         self.emoji.setAlignment(Qt.AlignCenter)
         self.description.setAlignment(Qt.AlignCenter)
 
-# Setting names
+# Giving the elements names to use in the CSS
+
         self.label.setObjectName("title")
         self.line.setObjectName("line")
         self.button.setObjectName("button")
@@ -45,7 +52,8 @@ class WeatherApp(QWidget):
         self.description.setObjectName("desc")
 
 
-# Css config
+# Css config to all elements of the app
+
         self.setStyleSheet("""
             QLabel, QPushButton{
                 font-family: Calibri;
@@ -79,20 +87,26 @@ class WeatherApp(QWidget):
             
         """)
 
+# Giving the button an action in case it's clicked
+
         self.button.clicked.connect(self.get_weather)
 
 # Line Edit config
+
         self.line.setAlignment(Qt.AlignCenter)
 
-
-
+# Function to get the List/Dictionaries from the API that give us the weather data
+# That function is connected as the "clicked" button
+# OBS: Go to the https://api.openweathermap.org and get your own key to work
+# The key can take a couple of minutes to start working
+    
     def get_weather(self):
 
         key = "7bc6b2b050b8b544c78949c55f9f1702"
         city = self.line.text()
         url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={key}"
 
-# Config Errors
+# Configuring Errors from the requests
 
         try:
             response = requests.get(url)
@@ -133,18 +147,27 @@ class WeatherApp(QWidget):
                 case _:
                     self.error(f"HTTP error occurred:\n{http_error}")
 
+# Connection Errors
+
         except requests.exceptions.ConnectionError:
             self.error("Connection Error:\nCheck your internet!")
+
+# Timeout Error
 
         except requests.exceptions.Timeout:
             self.error("Timeout Error:\nThe request timed out!")
 
+# Url Errors
+
         except requests.exceptions.TooManyRedirects:
             self.error("Too Many Redirects:\nCheck your Url!")
 
-        except requests.exceptions.RequestException as req_error: #-> network problems, invalid url
+# -> network problems, invalid url
+
+        except requests.exceptions.RequestException as req_error:
             self.error(f"Request Error:\n{req_error}")
 
+# Function to display the Error(above code) to the user on the bottom part of the app
 
     def error(self, message):
         self.temperature.setStyleSheet("Font-size: 35px;")
@@ -152,22 +175,30 @@ class WeatherApp(QWidget):
         self.emoji.clear()
         self.description.clear()
 
+#Function to display the bottom part of the app, after the "Get Weather" button
+
     def weather_display(self, data):
-# Temperature label
+
+# Temperature label - Display
+
         self.temperature.setStyleSheet("Font-size: 75px;")
         temperature_k = data["main"]["temp"]
         temperature_c = temperature_k - 273.15
 
         self.temperature.setText(f"{temperature_c:.0f}°C")
 
-# Emoji ID
+# Emoji ID - Display
 
         weather_id = data["weather"][0]["id"]
         self.emoji.setText(self.get_emoji(weather_id))
 
-# Desc Label
+# Desc Label - Display
+
         desc = data["weather"][0]["description"]
         self.description.setText(f"{desc}")
+
+# Method to choose which emoji is going to display depending on the ID of the Weather
+# OBS: Each weather have his own ID
 
     @staticmethod
     def get_emoji(weather_id):
